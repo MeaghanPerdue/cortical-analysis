@@ -1,0 +1,93 @@
+---
+title: "Cortical Surface Data Format Conversion"
+output: html_notebook
+---
+
+# Code for converting BISCUIT cortical surface outputs to Freesurfer format for data analysis in R
+Under development Jan. 2025 by Meaghan Perdue
+
+```{r}
+library(dplyr)
+library(freesurferformats)
+
+setwd("/Users/meaghan/Projects/cortical-analysis/data/test")
+
+
+```
+
+## Read BISCUIT gray matter surfaces and write to freesurfer format
+```{r}
+lh.pial<-read.fs.surface.vtk('/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output/10006_PS20_012_Session7/Lebel_Peds-x-10006-x-10006_PS20_012_Session7-x-biscuit_mc_v2-x-5354db8f-b70a-4597-9fb7-315acf79ff7c/surf/lh.gray.vtk')
+
+write.fs.surface('/Users/meaghan/Projects/cortical-analysis/data/test/Rlh.pial', lh.pial$vertices, lh.pial$faces, format = 'bin')
+
+rh.pial<-read.fs.surface.vtk('/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output/10006_PS20_012_Session7/Lebel_Peds-x-10006-x-10006_PS20_012_Session7-x-biscuit_mc_v2-x-5354db8f-b70a-4597-9fb7-315acf79ff7c/surf/rh.gray.vtk')
+
+write.fs.surface('/Users/meaghan/Projects/cortical-analysis/data/test/Rrh.pial', rh.pial$vertices, rh.pial$faces, format = 'bin')
+
+```
+
+## Read BISCUIT scalar data and write to freesurfer format
+```{r}
+lh.lgi.vals<-read.table('/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output/10006_PS20_012_Session7/Lebel_Peds-x-10006-x-10006_PS20_012_Session7-x-biscuit_mc_v2-x-5354db8f-b70a-4597-9fb7-315acf79ff7c/quant/lh.gray.LGI.txt')$V1
+
+write.fs.curv('/Users/meaghan/Projects/cortical-analysis/data/test/lh.lgi', lh.lgi.vals)
+
+rh.lgi.vals<-read.table('/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output/10006_PS20_012_Session7/Lebel_Peds-x-10006-x-10006_PS20_012_Session7-x-biscuit_mc_v2-x-5354db8f-b70a-4597-9fb7-315acf79ff7c/quant/rh.gray.LGI.txt')$V1
+
+write.fs.curv('/Users/meaghan/Projects/cortical-analysis/data/test/rh.lgi', rh.lgi.vals)
+
+```
+
+## Read BISCUIT template-registered scalar data and write to freesurfer format
+registered surfaces match fsaverage space, so no need to create surface meshes, just pull scalar data which can be displayed on fsaverage surface in freeview
+```{r}
+# Cortical Thickness
+lh.reg.ct.vals<-read.table('/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output/10006_PS20_012_Session7/Lebel_Peds-x-10006-x-10006_PS20_012_Session7-x-biscuit_mc_v2-x-5354db8f-b70a-4597-9fb7-315acf79ff7c/stat/lh.reg.thickness.txt')$V1
+
+write.fs.curv('/Users/meaghan/Projects/cortical-analysis/data/test/lh.reg.ct', lh.reg.ct.vals)
+
+rh.reg.ct.vals<-read.table('/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output/10006_PS20_012_Session7/Lebel_Peds-x-10006-x-10006_PS20_012_Session7-x-biscuit_mc_v2-x-5354db8f-b70a-4597-9fb7-315acf79ff7c/stat/rh.reg.thickness.txt')$V1
+
+write.fs.curv('/Users/meaghan/Projects/cortical-analysis/data/test/rh.reg.ct', rh.reg.ct.vals)
+
+# Surface Area
+lh.reg.sa.vals<-read.table('/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output/10006_PS20_012_Session7/Lebel_Peds-x-10006-x-10006_PS20_012_Session7-x-biscuit_mc_v2-x-5354db8f-b70a-4597-9fb7-315acf79ff7c/stat/lh.mid.reg.area.txt')$V1
+
+write.fs.curv('/Users/meaghan/Projects/cortical-analysis/data/test/lh.reg.sa', lh.reg.sa.vals)
+
+rh.reg.sa.vals<-read.table('/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output/10006_PS20_012_Session7/Lebel_Peds-x-10006-x-10006_PS20_012_Session7-x-biscuit_mc_v2-x-5354db8f-b70a-4597-9fb7-315acf79ff7c/stat/rh.mid.reg.area.txt')$V1
+
+write.fs.curv('/Users/meaghan/Projects/cortical-analysis/data/test/rh.reg.sa', rh.reg.sa.vals)
+
+# Local Gyrification Index
+lh.reg.lgi.vals<-read.table('/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output/10006_PS20_012_Session7/Lebel_Peds-x-10006-x-10006_PS20_012_Session7-x-biscuit_mc_v2-x-5354db8f-b70a-4597-9fb7-315acf79ff7c/stat/lh.gray.reg.LGI.txt')$V1
+
+write.fs.curv('/Users/meaghan/Projects/cortical-analysis/data/test/lh.reg.lgi', lh.reg.lgi.vals)
+
+rh.reg.lgi.vals<-read.table('/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output/10006_PS20_012_Session7/Lebel_Peds-x-10006-x-10006_PS20_012_Session7-x-biscuit_mc_v2-x-5354db8f-b70a-4597-9fb7-315acf79ff7c/stat/rh.gray.reg.LGI.txt')$V1
+
+write.fs.curv('/Users/meaghan/Projects/cortical-analysis/data/test/rh.reg.lgi', rh.reg.lgi.vals)
+
+# Sulcal Depth
+lh.reg.sd.vals<-read.table('/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output/10006_PS20_012_Session7/Lebel_Peds-x-10006-x-10006_PS20_012_Session7-x-biscuit_mc_v2-x-5354db8f-b70a-4597-9fb7-315acf79ff7c/stat/lh.gray.reg.SD.txt')$V1
+
+write.fs.curv('/Users/meaghan/Projects/cortical-analysis/data/test/lh.reg.sd', lh.reg.sd.vals)
+
+rh.reg.sd.vals<-read.table('/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output/10006_PS20_012_Session7/Lebel_Peds-x-10006-x-10006_PS20_012_Session7-x-biscuit_mc_v2-x-5354db8f-b70a-4597-9fb7-315acf79ff7c/stat/rh.gray.reg.SD.txt')$V1
+
+write.fs.curv('/Users/meaghan/Projects/cortical-analysis/data/test/rh.reg.sd', rh.reg.sd.vals)
+
+# Shape Complexity Index
+lh.reg.sci.vals<-read.table('/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output/10006_PS20_012_Session7/Lebel_Peds-x-10006-x-10006_PS20_012_Session7-x-biscuit_mc_v2-x-5354db8f-b70a-4597-9fb7-315acf79ff7c/stat/lh.mid.reg.SCI.txt')$V1
+
+write.fs.curv('/Users/meaghan/Projects/cortical-analysis/data/test/lh.reg.sci', lh.reg.sci.vals)
+
+rh.reg.sci.vals<-read.table('/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output/10006_PS20_012_Session7/Lebel_Peds-x-10006-x-10006_PS20_012_Session7-x-biscuit_mc_v2-x-5354db8f-b70a-4597-9fb7-315acf79ff7c/stat/rh.mid.reg.SCI.txt')$V1
+
+write.fs.curv('/Users/meaghan/Projects/cortical-analysis/data/test/rh.reg.sci', rh.reg.sci.vals)
+
+```
+
+
+
