@@ -9,13 +9,15 @@ Under development Jan. 2025 by Meaghan Perdue
 ```{r}
 library(dplyr)
 library(freesurferformats)
+library(knitr)
 
-setwd("/Users/meaghan/Projects/cortical-analysis/data/test")
+setwd("/Users/meaghan/Projects/cortical-analysis/data")
 
 
 ```
 
 ## Read BISCUIT gray matter surfaces and write to freesurfer format
+We don't really need to do this because we'll be working with the resampled surface data, but useful for visualization of individual subject data
 ```{r}
 lh.pial<-read.fs.surface.vtk('/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output/10006_PS20_012_Session7/Lebel_Peds-x-10006-x-10006_PS20_012_Session7-x-biscuit_mc_v2-x-5354db8f-b70a-4597-9fb7-315acf79ff7c/surf/lh.gray.vtk')
 
@@ -28,6 +30,7 @@ write.fs.surface('/Users/meaghan/Projects/cortical-analysis/data/test/Rrh.pial',
 ```
 
 ## Read BISCUIT scalar data and write to freesurfer format
+Again, this is just for visualization of each participant's data prior to registration/resampling
 ```{r}
 lh.lgi.vals<-read.table('/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output/10006_PS20_012_Session7/Lebel_Peds-x-10006-x-10006_PS20_012_Session7-x-biscuit_mc_v2-x-5354db8f-b70a-4597-9fb7-315acf79ff7c/quant/lh.gray.LGI.txt')$V1
 
@@ -42,50 +45,63 @@ write.fs.curv('/Users/meaghan/Projects/cortical-analysis/data/test/rh.lgi', rh.l
 ## Read BISCUIT template-registered scalar data and write to freesurfer format
 registered surfaces match fsaverage space, so no need to create surface meshes, just pull scalar data which can be displayed on fsaverage surface in freeview
 ```{r}
+#set output folder ID
+out<-"10007_Session7"
+
+#set macruise folder ID
+macid<-"10007_PS20_013_Session7"
+
+# set path to subject's macruise output
+macruise<-Sys.glob(file.path("/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output", macid, "*biscuit*", "stat"))
+
+# create subject output directory for freesurfer formatted data
+subdir<-file.path("/Users/meaghan/Projects/cortical-analysis/data", out)
+dir.create(subdir)
+
 # Cortical Thickness
-lh.reg.ct.vals<-read.table('/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output/10006_PS20_012_Session7/Lebel_Peds-x-10006-x-10006_PS20_012_Session7-x-biscuit_mc_v2-x-5354db8f-b70a-4597-9fb7-315acf79ff7c/stat/lh.reg.thickness.txt')$V1
+lh.reg.ct.vals<-read.table(file.path(macruise, 'lh.reg.thickness.txt'))$V1
 
-write.fs.curv('/Users/meaghan/Projects/cortical-analysis/data/test/lh.reg.ct', lh.reg.ct.vals)
+write.fs.curv(file.path(subdir,'lh.reg.ct'), lh.reg.ct.vals)
 
-rh.reg.ct.vals<-read.table('/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output/10006_PS20_012_Session7/Lebel_Peds-x-10006-x-10006_PS20_012_Session7-x-biscuit_mc_v2-x-5354db8f-b70a-4597-9fb7-315acf79ff7c/stat/rh.reg.thickness.txt')$V1
+rh.reg.ct.vals<-read.table(file.path(macruise,'rh.reg.thickness.txt'))$V1
 
-write.fs.curv('/Users/meaghan/Projects/cortical-analysis/data/test/rh.reg.ct', rh.reg.ct.vals)
+write.fs.curv(file.path(subdir, 'rh.reg.ct'), rh.reg.ct.vals)
 
 # Surface Area
-lh.reg.sa.vals<-read.table('/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output/10006_PS20_012_Session7/Lebel_Peds-x-10006-x-10006_PS20_012_Session7-x-biscuit_mc_v2-x-5354db8f-b70a-4597-9fb7-315acf79ff7c/stat/lh.mid.reg.area.txt')$V1
+lh.reg.sa.vals<-read.table(file.path(macruise,'lh.mid.reg.area.txt'))$V1
 
-write.fs.curv('/Users/meaghan/Projects/cortical-analysis/data/test/lh.reg.sa', lh.reg.sa.vals)
+write.fs.curv(file.path(subdir, 'lh.reg.sa'), lh.reg.sa.vals)
 
-rh.reg.sa.vals<-read.table('/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output/10006_PS20_012_Session7/Lebel_Peds-x-10006-x-10006_PS20_012_Session7-x-biscuit_mc_v2-x-5354db8f-b70a-4597-9fb7-315acf79ff7c/stat/rh.mid.reg.area.txt')$V1
+rh.reg.sa.vals<-read.table(file.path(macruise,'rh.mid.reg.area.txt'))$V1
 
 write.fs.curv('/Users/meaghan/Projects/cortical-analysis/data/test/rh.reg.sa', rh.reg.sa.vals)
 
 # Local Gyrification Index
-lh.reg.lgi.vals<-read.table('/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output/10006_PS20_012_Session7/Lebel_Peds-x-10006-x-10006_PS20_012_Session7-x-biscuit_mc_v2-x-5354db8f-b70a-4597-9fb7-315acf79ff7c/stat/lh.gray.reg.LGI.txt')$V1
+lh.reg.lgi.vals<-read.table(file.path(macruise,'lh.gray.reg.LGI.txt'))$V1
 
-write.fs.curv('/Users/meaghan/Projects/cortical-analysis/data/test/lh.reg.lgi', lh.reg.lgi.vals)
+write.fs.curv(file.path(subdir, 'lh.reg.lgi'), lh.reg.lgi.vals)
 
-rh.reg.lgi.vals<-read.table('/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output/10006_PS20_012_Session7/Lebel_Peds-x-10006-x-10006_PS20_012_Session7-x-biscuit_mc_v2-x-5354db8f-b70a-4597-9fb7-315acf79ff7c/stat/rh.gray.reg.LGI.txt')$V1
+rh.reg.lgi.vals<-read.table(file.path(macruise,'rh.gray.reg.LGI.txt'))$V1
 
-write.fs.curv('/Users/meaghan/Projects/cortical-analysis/data/test/rh.reg.lgi', rh.reg.lgi.vals)
+write.fs.curv(file.path(subdir, 'rh.reg.lgi'), rh.reg.lgi.vals)
 
 # Sulcal Depth
-lh.reg.sd.vals<-read.table('/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output/10006_PS20_012_Session7/Lebel_Peds-x-10006-x-10006_PS20_012_Session7-x-biscuit_mc_v2-x-5354db8f-b70a-4597-9fb7-315acf79ff7c/stat/lh.gray.reg.SD.txt')$V1
+lh.reg.sd.vals<-read.table(file.path(macruise,'lh.gray.reg.SD.txt'))$V1
 
-write.fs.curv('/Users/meaghan/Projects/cortical-analysis/data/test/lh.reg.sd', lh.reg.sd.vals)
+write.fs.curv(file.path(subdir,'lh.reg.sd'), lh.reg.sd.vals)
 
-rh.reg.sd.vals<-read.table('/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output/10006_PS20_012_Session7/Lebel_Peds-x-10006-x-10006_PS20_012_Session7-x-biscuit_mc_v2-x-5354db8f-b70a-4597-9fb7-315acf79ff7c/stat/rh.gray.reg.SD.txt')$V1
+rh.reg.sd.vals<-read.table(file.path(macruise,'rh.gray.reg.SD.txt'))$V1
 
-write.fs.curv('/Users/meaghan/Projects/cortical-analysis/data/test/rh.reg.sd', rh.reg.sd.vals)
+write.fs.curv(file.path(subdir, 'rh.reg.sd'), rh.reg.sd.vals)
 
 # Shape Complexity Index
-lh.reg.sci.vals<-read.table('/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output/10006_PS20_012_Session7/Lebel_Peds-x-10006-x-10006_PS20_012_Session7-x-biscuit_mc_v2-x-5354db8f-b70a-4597-9fb7-315acf79ff7c/stat/lh.mid.reg.SCI.txt')$V1
+lh.reg.sci.vals<-read.table(file.path(macruise,'lh.mid.reg.SCI.txt'))$V1
 
-write.fs.curv('/Users/meaghan/Projects/cortical-analysis/data/test/lh.reg.sci', lh.reg.sci.vals)
+write.fs.curv(file.path(subdir, 'lh.reg.sci'), lh.reg.sci.vals)
 
-rh.reg.sci.vals<-read.table('/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output/10006_PS20_012_Session7/Lebel_Peds-x-10006-x-10006_PS20_012_Session7-x-biscuit_mc_v2-x-5354db8f-b70a-4597-9fb7-315acf79ff7c/stat/rh.mid.reg.SCI.txt')$V1
+rh.reg.sci.vals<-read.table(file.path(macruise,'rh.mid.reg.SCI.txt'))$V1
 
-write.fs.curv('/Users/meaghan/Projects/cortical-analysis/data/test/rh.reg.sci', rh.reg.sci.vals)
+write.fs.curv(file.path(subdir, 'rh.reg.sci'), rh.reg.sci.vals)
 
 ```
 
