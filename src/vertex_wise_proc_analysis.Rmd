@@ -1,0 +1,212 @@
+---
+title: "Cortical Surface Data Format Conversion"
+output: html_notebook
+---
+
+# Code for converting BISCUIT cortical surface outputs to Freesurfer format for data analysis in R
+Under development Jan. 2025 by Meaghan Perdue
+
+```{r}
+library(dplyr)
+library(freesurferformats)
+library(knitr)
+
+setwd("/Users/meaghan/Projects/cortical-analysis/src")
+
+
+```
+
+## Read BISCUIT gray matter surfaces and write to freesurfer format
+We don't really need to do this because we'll be working with the resampled surface data, but useful for visualization of individual subject data
+```{r}
+lh.pial<-read.fs.surface.vtk('/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output/10006_PS20_012_Session7/Lebel_Peds-x-10006-x-10006_PS20_012_Session7-x-biscuit_mc_v2-x-5354db8f-b70a-4597-9fb7-315acf79ff7c/surf/lh.gray.vtk')
+
+write.fs.surface('/Users/meaghan/Projects/cortical-analysis/data/test/Rlh.pial', lh.pial$vertices, lh.pial$faces, format = 'bin')
+
+rh.pial<-read.fs.surface.vtk('/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output/10006_PS20_012_Session7/Lebel_Peds-x-10006-x-10006_PS20_012_Session7-x-biscuit_mc_v2-x-5354db8f-b70a-4597-9fb7-315acf79ff7c/surf/rh.gray.vtk')
+
+write.fs.surface('/Users/meaghan/Projects/cortical-analysis/data/test/Rrh.pial', rh.pial$vertices, rh.pial$faces, format = 'bin')
+
+```
+
+## Read BISCUIT scalar data and write to freesurfer format
+Again, this is just for visualization of each participant's data prior to registration/resampling
+```{r}
+lh.lgi.vals<-read.table('/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output/10006_PS20_012_Session7/Lebel_Peds-x-10006-x-10006_PS20_012_Session7-x-biscuit_mc_v2-x-5354db8f-b70a-4597-9fb7-315acf79ff7c/quant/lh.gray.LGI.txt')$V1
+
+write.fs.curv('/Users/meaghan/Projects/cortical-analysis/data/test/lh.lgi', lh.lgi.vals)
+
+rh.lgi.vals<-read.table('/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output/10006_PS20_012_Session7/Lebel_Peds-x-10006-x-10006_PS20_012_Session7-x-biscuit_mc_v2-x-5354db8f-b70a-4597-9fb7-315acf79ff7c/quant/rh.gray.LGI.txt')$V1
+
+write.fs.curv('/Users/meaghan/Projects/cortical-analysis/data/test/rh.lgi', rh.lgi.vals)
+
+```
+
+## Read BISCUIT template-registered scalar data and write to freesurfer format
+outputs are freesurfer-format scalar files in fsaverage space 
+
+```{r}
+
+list<-read.table("sublist.txt")
+
+for (i in 1:length(list$V1)) {
+    #set macruise folder ID
+    macid<-list$V1[i]
+    
+    #set output folder ID
+    out<-list$V2[i]
+    
+    # set path to subject's macruise output
+    macruise<-Sys.glob(file.path("/Volumes/catherine_team/Project_Folders/MaCRUISE/PS_MaCRUISE1mm/1_Processed_Output", macid, "*biscuit*", "stat"))
+    
+    # create subject output directory for freesurfer formatted data
+    subdir<-file.path("/Users/meaghan/Projects/cortical-analysis/data", out)
+    dir.create(subdir)
+    
+    # Cortical Thickness
+    lh.reg.ct.vals<-read.table(file.path(macruise, 'lh.reg.thickness.txt'))$V1
+    
+    write.fs.curv(file.path(subdir,'lh.reg.ct'), lh.reg.ct.vals)
+    
+    rh.reg.ct.vals<-read.table(file.path(macruise,'rh.reg.thickness.txt'))$V1
+    
+    write.fs.curv(file.path(subdir, 'rh.reg.ct'), rh.reg.ct.vals)
+    
+    # Surface Area
+    lh.reg.sa.vals<-read.table(file.path(macruise,'lh.mid.reg.area.txt'))$V1
+    
+    write.fs.curv(file.path(subdir, 'lh.reg.sa'), lh.reg.sa.vals)
+    
+    rh.reg.sa.vals<-read.table(file.path(macruise,'rh.mid.reg.area.txt'))$V1
+    
+    write.fs.curv(file.path(subdir, 'rh.reg.sa'), rh.reg.sa.vals)
+    
+    # Local Gyrification Index
+    lh.reg.lgi.vals<-read.table(file.path(macruise,'lh.gray.reg.LGI.txt'))$V1
+    
+    write.fs.curv(file.path(subdir, 'lh.reg.lgi'), lh.reg.lgi.vals)
+    
+    rh.reg.lgi.vals<-read.table(file.path(macruise,'rh.gray.reg.LGI.txt'))$V1
+    
+    write.fs.curv(file.path(subdir, 'rh.reg.lgi'), rh.reg.lgi.vals)
+    
+    # Sulcal Depth
+    lh.reg.sd.vals<-read.table(file.path(macruise,'lh.gray.reg.SD.txt'))$V1
+    
+    write.fs.curv(file.path(subdir,'lh.reg.sd'), lh.reg.sd.vals)
+    
+    rh.reg.sd.vals<-read.table(file.path(macruise,'rh.gray.reg.SD.txt'))$V1
+    
+    write.fs.curv(file.path(subdir, 'rh.reg.sd'), rh.reg.sd.vals)
+    
+    # Shape Complexity Index
+    lh.reg.sci.vals<-read.table(file.path(macruise,'lh.mid.reg.SCI.txt'))$V1
+    
+    write.fs.curv(file.path(subdir, 'lh.reg.sci'), lh.reg.sci.vals)
+    
+    rh.reg.sci.vals<-read.table(file.path(macruise,'rh.mid.reg.SCI.txt'))$V1
+    
+    write.fs.curv(file.path(subdir, 'rh.reg.sci'), rh.reg.sci.vals)
+
+}
+
+```
+
+
+## Resample data from fsaverage space to fsaverage6 space
+VertexWiseR requires data to be resampled to fsaverage5 or fsaverage6 (40692 vertices per hemisphere) space \
+Runs resampling in freesurfer using mris_apply_reg tool (freesurfer must be installed on local machine, make sure FREESURFER_HOME and SUBJECTS_DIR paths are correct) \
+Outputs (.mgz files) can be viewed in freeview as an overlay on the fsaverage6 surface
+```{bash}
+export FREESURFER_HOME=/Applications/freesurfer/7.4.1
+export SUBJECTS_DIR=/Applications/freesurfer/7.4.1/subjects
+
+metricsleft=(
+    "lh.reg.ct"
+    "lh.reg.sa"
+    "lh.reg.lgi"
+    "lh.reg.sd"
+    )
+    
+metricsright=(
+    "rh.reg.ct"
+    "rh.reg.sa"
+    "rh.reg.lgi"
+    "rh.reg.sd"
+    )
+
+for i in $(cat sublist2.txt); do
+  for j in ${metricsleft[@]}; do
+    # Left hemisphere
+    mris_apply_reg --i /Users/meaghan/Projects/cortical-analysis/data/${i}/${j} \
+      --o  /Users/meaghan/Projects/cortical-analysis/data/${i}/${j}.fsa6.mgz \
+      --streg $SUBJECTS_DIR/fsaverage/surf/lh.sphere.reg $SUBJECTS_DIR/fsaverage6/surf/lh.sphere.reg 
+    done
+  for k in ${metricsright[@]}; do
+    # Right hemisphere
+    mris_apply_reg --i /Users/meaghan/Projects/cortical-analysis/data/${i}/${k} \
+      --o  /Users/meaghan/Projects/cortical-analysis/data/${i}/${k}.fsa6.mgz \
+      --streg $SUBJECTS_DIR/fsaverage/surf/rh.sphere.reg $SUBJECTS_DIR/fsaverage6/surf/rh.sphere.reg 
+    done
+  done
+
+```
+## Prepare data for Vertex Wise Analysis with VertexWiseR
+
+```{r}
+library(freesurferformats)
+library(VertexWiseR)
+
+# read resampled thickness data
+lh.thickness.fs6 <- read.fs.mgh("/Users/meaghan/Projects/cortical-analysis/data/10046_Session7/lh.thickness.fsa6.mgz")
+rh.thickness.fs6 <- read.fs.mgh("/Users/meaghan/Projects/cortical-analysis/data/10046_Session7/rh.thickness.fsa6.mgz")
+
+s1.bilat.thickness.fs6<-c(lh.thickness.fs6, rh.thickness.fs6)
+s2.bilat.thickness.fs6<-c(lh.thickness.fs6, rh.thickness.fs6)
+s3.bilat.thickness.fs6<-c(lh.thickness.fs6, rh.thickness.fs6)
+
+matrix<-matrix(c(s1.bilat.thickness.fs6, s2.bilat.thickness.fs6, s3.bilat.thickness.fs6), nrow=3, byrow=TRUE)
+
+input<-"/Users/meaghan/Projects/cortical-analysis/data/test"
+
+# extract surface data to VertexWiseR matrix format: 1 row per subject containing vertex-wise measurements lh followed by rh
+#sample<-readRDS(file="~/Downloads/SPRENG_CTv_site1.rds")
+
+#set macruise folder ID
+   #cocatenate subjects' hemispheres data 
+    thickness<-c(lh.reg.ct.vals, rh.reg.ct.vals)
+    thickness2<-c(lh.reg.ct.vals, rh.reg.ct.vals)
+    thickness3<-c(lh.reg.ct.vals, rh.reg.ct.vals)
+    
+#pull multiple subjects into matrix
+    matrix<-matrix(c(thickness, thickness2, thickness3), nrow=3, byrow=TRUE)
+
+# save matrix to rds
+saveRDS(matrix, "/Users/meaghan/Projects/cortical-analysis/data/test/thickness_matrix_fs6.rds")
+
+# smooth suface
+thickness_smoothed<-smooth_surf(matrix, 10, VWR_check = FALSE)
+
+
+
+```
+
+# Run vertex-wise analysis
+```{r}
+# define covariates  
+all_pred=data.frame(age = c(7, 8, 9))
+head(all_pred)
+
+# run the model
+model.thickness=TFCE_vertex_analysis(model = all_pred$age, contrast=all_pred$age, surf_data = thickness_smoothed)
+
+# write T-stat files to surface scalar files for viewing in freeview (left and right hemispheres written separately by index)
+write.fs.curv('/Users/meaghan/Projects/cortical-analysis/data/test/tfce.tstat.lh', model.thickness$t_stat[1:40962])
+write.fs.curv('/Users/meaghan/Projects/cortical-analysis/data/test/tfce.tstat.rh', model.thickness$t_stat[40963:81924])
+
+
+# threshold results
+results=TFCE_threshold(model.thickness, p=0.05, atlas=1)
+print(results$cluster_level_results)
+
+```
