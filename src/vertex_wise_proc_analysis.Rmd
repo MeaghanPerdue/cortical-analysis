@@ -4,13 +4,16 @@ output: html_notebook
 ---
 
 # Code for converting BISCUIT cortical surface outputs to Freesurfer format for data analysis in R
-Under development Jan. 2025 by Meaghan Perdue
+Under development Jan. 2025 by Meaghan Perdue \
+install all packages listed below, make sure R is a relatively up-to-date version first (>4.0.0) \
+after installing VertexWiseR, be sure to run VWRfirstrun() to complete set-up \
+Freesurfer must also be installed on computer
 
 ```{r}
 library(dplyr)
 library(freesurferformats)
 library(knitr)
-
+library(VertexWiseR)
 setwd("/Users/meaghan/Projects/cortical-analysis/src")
 
 ```
